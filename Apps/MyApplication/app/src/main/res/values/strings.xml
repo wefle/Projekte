@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">Der Müllkalendar</string>
+    <string name="app_name">Der Müllkalender</string>
     <string name="title_activity_test">Test</string>
-    <string name="title_activity_main2">MainActivity2</string>
     <string name="title_activity_settings">Settings</string>
 </resources>
