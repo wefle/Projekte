@@ -5,7 +5,6 @@ import android.util.Log
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfReader
 import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor
-import kotlinx.coroutines.delay
 import java.io.File
 import java.time.LocalDate
 
@@ -40,8 +39,12 @@ class DataExtractor() {
                     .replace("Fr", " ").replace("Sa", " ")
                     .replace("So", " ").replace("*", "")
                     .replace("+", "")
+                    .replace("Bio", "B")
+                    .replace("Gelbe Tonne", "G")
+                    .replace("Papier", "P")
+                    .replace("Rest", "R")
                 val page1: MutableList<String> = extractedText[0].split("\n").toMutableList()
-                page1.removeAt(page1.lastIndex)
+                if (!page1[page1.lastIndex].contains("31")) {page1.removeAt(page1.lastIndex)}
                 page1.subList(0, 3).clear()
 
                 //clean data -> page 1
@@ -138,8 +141,12 @@ class DataExtractor() {
                     .replace("Fr", " ").replace("Sa", " ")
                     .replace("So", " ").replace("*", "")
                     .replace("+", "")
+                    .replace("Bio", "B")
+                    .replace("Gelbe Tonne", "G")
+                    .replace("Papier", "P")
+                    .replace("Rest", "R")
                 val page2: MutableList<String> = extractedText[1].split("\n").toMutableList()
-                page2.removeAt(page2.lastIndex)
+                if (!page2[page2.lastIndex].contains("31")) {page2.removeAt(page2.lastIndex)}
                 page2.subList(0, 3).clear()
 
                 //clean data -> page 2
@@ -245,8 +252,12 @@ class DataExtractor() {
                         .replace("Fr", " ").replace("Sa", " ")
                         .replace("So", " ").replace("*", "")
                         .replace("+", "")
+                        .replace("Bio", "B")
+                        .replace("Gelbe Tonne", "G")
+                        .replace("Papier", "P")
+                        .replace("Rest", "R")
                     val page1: MutableList<String> = extractedText[0].split("\n").toMutableList()
-                    page1.removeAt(page1.lastIndex)
+                    if (!page1[page1.lastIndex].contains("31")) {page1.removeAt(page1.lastIndex)}
                     page1.subList(0, 3).clear()
 
                     var count = 0
@@ -374,8 +385,12 @@ class DataExtractor() {
                         .replace("Fr", " ").replace("Sa", " ")
                         .replace("So", " ").replace("*", "")
                         .replace("+", "")
+                        .replace("Bio", "B")
+                        .replace("Gelbe Tonne", "G")
+                        .replace("Papier", "P")
+                        .replace("Rest", "R")
                     val page2: MutableList<String> = extractedText[1].split("\n").toMutableList()
-                    page2.removeAt(page2.lastIndex)
+                    if (!page2[page2.lastIndex].contains("31")) {page2.removeAt(page2.lastIndex)}
                     page2.subList(0, 3).clear()
 
                     //clean data -> page 2

@@ -17,22 +17,13 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.WeekFields
 
-enum class Operator {
-    GREATER_THAN,
-    LESS_THAN
-}
-
 enum class Sort {
     PLZ,
-    STR,
-    NR,
     MONTH,
-    DAY
 }
 
 enum class Order {
     ASC,
-    DESC
 }
 /******************************* UserData ********************************/
 @Entity
@@ -195,7 +186,7 @@ class TrashViewModel(
             type = trashType,
             month = date.monthValue-1,
             week = LocalDate.of(date.year, date.monthValue, date.dayOfMonth)
-                .get(WeekFields.of(DayOfWeek.MONDAY, 7).weekOfYear())-1,
+                .get(WeekFields.of(DayOfWeek.MONDAY, 7).weekOfYear()),
             day = date.dayOfMonth,
             year = date.year
         )
@@ -205,7 +196,7 @@ class TrashViewModel(
         trashEntity.type = trashType
         trashEntity.month = date.monthValue-1
         trashEntity.week = LocalDate.of(date.year, date.monthValue, date.dayOfMonth)
-            .get(WeekFields.of(DayOfWeek.MONDAY, 7).weekOfYear())-1
+            .get(WeekFields.of(DayOfWeek.MONDAY, 7).weekOfYear())
         trashEntity.day = date.dayOfMonth
         trashEntity.year = date.year
 

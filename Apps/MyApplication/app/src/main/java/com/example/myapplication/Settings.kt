@@ -303,10 +303,12 @@ fun SettingsView(modifier: Modifier = Modifier, tVM: TrashViewModel, uVM: UserVi
                 }
             }
         }
-        DialogWindow(
-            showDialog = showEditPage, onDismissRequest = { showEditPage = false },
-            tVM = tVM, uVM = uVM, text = "Möchtest du deine Daten anpassen?"
-        )
+        if(showEditPage) {
+            DialogWindow(
+                dialog = showEditPage, onDismissRequest = { showEditPage = false },
+                tVM = tVM, uVM = uVM, text = "Möchtest du deine Daten anpassen?"
+            )
+        }
     }
 }
 /****************** Content *************************/

@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import android.R.attr.onClick
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -176,6 +177,7 @@ fun getCurrentData(type: String): Array<Trash> {
 data class NTuple5<T1, T2, T3, T4, T5>(val t1: T1, val t2: T2, val t3: T3, val t4: T4, val t5: T5) : Serializable {
     override fun toString(): String = "($t1, $t2, $t3, $t4, $t5)"
 }
+//Loading Window
 @Composable
 fun CircularProgressWindow(modifier: Modifier = Modifier){
     val black = Brush.linearGradient(
@@ -205,6 +207,116 @@ fun CircularProgressWindow(modifier: Modifier = Modifier){
             )
         }
     }
+}
+fun getJavaScript() : String{
+    return """
+        //change text-part
+        document.querySelector('h2').innerHTML = "Deine Entsorgungstermine";
+        
+        //change text-part
+        document.querySelector('.content b').innerHTML = "Bitte wähle deine Straße aus:";
+        
+        //hide input field 
+        document.querySelector('.content DIV:nth-child(5) div').style.display = 'none';                                
+        document.getElementById('strassetext').style.display = 'none';                                
+        
+        //save street
+        document.getElementById('strasse').addEventListener('change', event => {
+           Android.getStreetValue(event.target.value);
+        });
+        
+        const callback1 = (mutationList) => {
+            for (const mutation of mutationList) {
+                if (mutation.type === "childList") {
+                    let list = mutation.addedNodes;
+                    for(const elem of list){
+                        //change text-part
+                        if(elem.nodeName == 'B'){
+                            if(elem.innerHTML.includes('Bitte wählen')){
+                                elem.innerHTML = 'Bitte wähle deine Hausnummer aus:';
+                            }
+                        }
+                        //change text-part
+                        if(elem.nodeName =='#text'){
+                            elem.textContent = '';
+                        }
+                        //save house number
+                        if(elem.nodeName == 'BUTTON'){
+                            elem.addEventListener('click', event => {
+                               Android.getNumValue(event.target.textContent);
+                            });
+                        }
+                        if(elem.nodeName == 'DIV'){
+                            //hide button
+                            if(elem.className == 'row'){
+                                elem.children[1].style.display = 'none';
+                            }
+                            //change text-part
+                            if(elem.id == 'outA4'){
+                                let elemChildren = elem.childNodes
+                                for(const child of elemChildren){
+                                    if(child.nodeName == '#text'){
+                                        if(child.textContent.includes('Bitte wählen')){
+                                            child.textContent = 'Bitte wähle deine Behältergröße aus:';
+                                        }
+                                        if(child.textContent.includes('Bitte prüfen')){
+                                            child.textContent = 'Bitte prüfe, ob dein Stadtteil und deine Behältergröße korrekt ausgewählt wurden.';
+                                        }
+                                    }
+                                }    
+                                observer1.observe(elem, {childList: true});                                                   
+                            }
+                        }
+                    }                                            
+                }
+            }
+        };
+        const observer1 = new MutationObserver(callback1);
+        observer1.observe(document.getElementById('out'), {childList: true});
+        observer1.observe(document.getElementById('out2'), {childList: true});
+        
+        //change text-part
+        document.getElementById('out').innerHTML = "";
+        
+        const callback2 = (mutationList) => {
+            for (const mutation of mutationList) {
+                if (mutation.type === "childList") {
+                    let list = mutation.addedNodes;
+                    
+                    // current year
+                    const year = new Date().getFullYear()
+                    for (const elem of list){
+                        if(elem.nodeName == 'BUTTON'){
+                            // hide button to prev year (if exists)
+                            if (elem.textContent.includes(year-1)){
+                                elem.style.display = 'none';
+                            }
+                            else {
+                                // hide unnecessary button
+                                if (elem.textContent.includes('Symbole')){
+                                    elem.style.display = 'none';
+                                }
+                                // change appearance of button
+                                else {
+                                    elem.style.background = '#79AB32';
+                                    let version = elem.textContent;
+                                    elem.textContent = 'Weiter';
+                                    Android.getPDFVersion(version);
+                                    
+                                    elem.addEventListener('click', () => {
+                                       Android.onBtnClick(true);
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        const observer2 = new MutationObserver(callback2);
+        observer2.observe(document.getElementById('kalenderlink_unten'), {childList: true});
+       
+    """.trimIndent()
 }
 /****************** Resources ***********************/
 
@@ -588,7 +700,7 @@ fun welcomePage1(modifier: Modifier = Modifier): NTuple5<String, Int,
     )
     AndroidView(
         modifier = modifier
-            .height(650.dp)
+            .height(620.dp)
             .clip(RoundedCornerShape(5))
             .border(1.dp, GreenDark, RoundedCornerShape(5)),
         factory = { context ->
@@ -622,102 +734,7 @@ fun welcomePage1(modifier: Modifier = Modifier): NTuple5<String, Int,
                 webViewClient = object : WebViewClient() {
                     override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
-                        evaluateJavascript(
-                            """
-                                //change text-part
-                                document.querySelector('h2').innerHTML = "Deine Entsorgungstermine";
-                                
-                                //change text-part
-                                document.querySelector('.content b').innerHTML = "Bitte wähle deine Straße aus:";
-                                
-                                //hide input field 
-                                document.querySelector('.content DIV:nth-child(5) div').style.display = 'none';                                
-                                document.getElementById('strassetext').style.display = 'none';                                
-                                
-                                //save street
-                                document.getElementById('strasse').addEventListener('change', event => {
-                                   Android.getStreetValue(event.target.value);
-                                });
-                                
-                                const callback1 = (mutationList) => {
-                                    for (const mutation of mutationList) {
-                                        if (mutation.type === "childList") {
-                                            let list = mutation.addedNodes;
-                                            for(const elem of list){
-                                                //change text-part
-                                                if(elem.nodeName == 'B'){
-                                                    if(elem.innerHTML.includes('Bitte wählen')){
-                                                        elem.innerHTML = 'Bitte wähle deine Hausnummer aus:';
-                                                    }
-                                                }
-                                                //change text-part
-                                                if(elem.nodeName =='#text'){
-                                                    elem.textContent = '';
-                                                }
-                                                //save house number
-                                                if(elem.nodeName == 'BUTTON'){
-                                                    elem.addEventListener('click', event => {
-                                                       Android.getNumValue(event.target.textContent);
-                                                    });
-                                                }
-                                                if(elem.nodeName == 'DIV'){
-                                                    //hide button
-                                                    if(elem.className == 'row'){
-                                                        elem.children[1].style.display = 'none';
-                                                    }
-                                                    //change text-part
-                                                    if(elem.id == 'outA4'){
-                                                        let elemChildren = elem.childNodes
-                                                        for(const child of elemChildren){
-                                                            if(child.nodeName == '#text'){
-                                                                if(child.textContent.includes('Bitte wählen')){
-                                                                    child.textContent = 'Bitte wähle deine Behältergröße aus:';
-                                                                }
-                                                                if(child.textContent.includes('Bitte prüfen')){
-                                                                    child.textContent = 'Bitte prüfe, ob dein Stadtteil und deine Behältergröße korrekt ausgewählt wurden.';
-                                                                }
-                                                            }
-                                                        }    
-                                                        observer1.observe(elem, {childList: true});                                                   
-                                                    }
-                                                }
-                                            }                                            
-                                        }
-                                    }
-                                };
-                                const observer1 = new MutationObserver(callback1);
-                                observer1.observe(document.getElementById('out'), {childList: true});
-                                observer1.observe(document.getElementById('out2'), {childList: true});
-                                
-                                //change text-part
-                                document.getElementById('out').innerHTML = "";
-                                
-                                const callback2 = (mutationList) => {
-                                    for (const mutation of mutationList) {
-                                        if (mutation.type === "childList") {
-                                            let list = mutation.addedNodes;
-                                            
-                                            //hide first button
-                                            list[0].style.display = 'none';
-                                            
-                                            //change second button
-                                            //there are 2 button-element but observer registered a text-element between them
-                                            list[2].style.background = '#79AB32';
-                                            let version = list[2].textContent;
-                                            list[2].textContent = 'Weiter';
-                                            Android.getPDFVersion(version);
-                                            
-                                            list[2].addEventListener('click', () => {
-                                               Android.onBtnClick(true);
-                                            });
-                                        }
-                                    }
-                                };
-                                const observer2 = new MutationObserver(callback2);
-                                observer2.observe(document.getElementById('kalenderlink_unten'), {childList: true});
-                               
-                            """.trimIndent(), null
-                        )
+                        evaluateJavascript(getJavaScript(), null)
                     }
 
                     override fun onLoadResource(view: WebView?, url: String?) {
@@ -981,7 +998,7 @@ fun CalendarView(modifier: Modifier = Modifier, tVM: TrashViewModel, uVM: UserVi
 
                     val pagerState =
                         rememberPagerState(
-                            initialPage = currentWeek - 1,
+                            initialPage = currentWeek,
                             pageCount = { lastWeek + 1 })
                     val prefArr =
                         arrayOf(userList[0].B, userList[0].G, userList[0].P, userList[0].R)
@@ -997,9 +1014,11 @@ fun CalendarView(modifier: Modifier = Modifier, tVM: TrashViewModel, uVM: UserVi
                         )
                         Column(modifier = modifier.verticalScroll(rememberScrollState())) {
                             HorizontalPager(state = pagerState) { currentPage ->
-                                val trashEntities =
-                                    trashDataList.filter { elem -> elem.week == currentPage }
-                                CalendarPageWeek(trashEntities = trashEntities, userPrefs = prefArr)
+                                val trashEntities = trashDataList.filter { elem -> elem.week == currentPage }
+                                CalendarPageWeek(
+                                    trashEntities = trashEntities,
+                                    userPrefs = prefArr
+                                )
                             }
                         }
                     }
@@ -1045,7 +1064,7 @@ fun CalendarView(modifier: Modifier = Modifier, tVM: TrashViewModel, uVM: UserVi
         }
         else{
             var showDialog = true
-            DialogWindow(showDialog = showDialog, onDismissRequest = {showDialog = false},
+            DialogWindow(dialog = showDialog, onDismissRequest = {showDialog = false},
                 tVM = tVM, uVM = uVM,
                 text = "Die Müllabfuhrtermindaten scheinen nicht länger aktuell zu sein. Sollen diese jetzt aktualisiert werden?")
         }
@@ -1582,9 +1601,10 @@ fun CalendarPageMonth(modifier: Modifier = Modifier, trashEntities: List<TrashEn
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun DialogWindow(modifier: Modifier = Modifier, onDismissRequest: () -> Unit,
-                 showDialog: Boolean, text: String, tVM: TrashViewModel, uVM: UserViewModel){
+                 dialog: Boolean, text: String, tVM: TrashViewModel, uVM: UserViewModel){
 
     var showDataDialog by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(dialog) }
 
     if(showDialog) {
         Dialog(onDismissRequest = { onDismissRequest() }) {
@@ -1609,7 +1629,7 @@ fun DialogWindow(modifier: Modifier = Modifier, onDismissRequest: () -> Unit,
                         Button(
                             onClick = {
                                 showDataDialog = true
-                                onDismissRequest()
+                                showDialog = false
                             },
                             shape = RoundedCornerShape(10),
                             colors = ButtonColors(
@@ -1643,7 +1663,8 @@ fun DialogWindow(modifier: Modifier = Modifier, onDismissRequest: () -> Unit,
             }
         }
     }
-    if(showDataDialog) DataDialog(tVM = tVM, uVM =  uVM, showDDialog = true)
+    if(showDataDialog)
+        DataDialog(tVM = tVM, uVM =  uVM, showDDialog = true)
 }
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -1734,102 +1755,7 @@ fun DataDialog(modifier: Modifier = Modifier, tVM: TrashViewModel, uVM: UserView
                                 webViewClient = object : WebViewClient() {
                                     override fun onPageFinished(view: WebView?, url: String?) {
                                         super.onPageFinished(view, url)
-                                        evaluateJavascript(
-                                            """
-                                //change text-part
-                                document.querySelector('h2').innerHTML = "Deine Entsorgungstermine";
-                                
-                                //change text-part
-                                document.querySelector('.content b').innerHTML = "Bitte wähle deine Straße aus:";
-                                
-                                //hide input field 
-                                document.querySelector('.content DIV:nth-child(5) div').style.display = 'none';                                
-                                document.getElementById('strassetext').style.display = 'none';                                
-                                
-                                //save street
-                                document.getElementById('strasse').addEventListener('change', event => {
-                                   Android.getStreetValue(event.target.value);
-                                });
-                                
-                                const callback1 = (mutationList) => {
-                                    for (const mutation of mutationList) {
-                                        if (mutation.type === "childList") {
-                                            let list = mutation.addedNodes;
-                                            for(const elem of list){
-                                                //change text-part
-                                                if(elem.nodeName == 'B'){
-                                                    if(elem.innerHTML.includes('Bitte wählen')){
-                                                        elem.innerHTML = 'Bitte wähle deine Hausnummer aus:';
-                                                    }
-                                                }
-                                                //change text-part
-                                                if(elem.nodeName =='#text'){
-                                                    elem.textContent = '';
-                                                }
-                                                //save house number
-                                                if(elem.nodeName == 'BUTTON'){
-                                                    elem.addEventListener('click', event => {
-                                                       Android.getNumValue(event.target.textContent);
-                                                    });
-                                                }
-                                                if(elem.nodeName == 'DIV'){
-                                                    //hide button
-                                                    if(elem.className == 'row'){
-                                                        elem.children[1].style.display = 'none';
-                                                    }
-                                                    //change text-part
-                                                    if(elem.id == 'outA4'){
-                                                        let elemChildren = elem.childNodes
-                                                        for(const child of elemChildren){
-                                                            if(child.nodeName == '#text'){
-                                                                if(child.textContent.includes('Bitte wählen')){
-                                                                    child.textContent = 'Bitte wähle deine Behältergröße aus:';
-                                                                }
-                                                                if(child.textContent.includes('Bitte prüfen')){
-                                                                    child.textContent = 'Bitte prüfe, ob dein Stadtteil und deine Behältergröße korrekt ausgewählt wurden.';
-                                                                }
-                                                            }
-                                                        }    
-                                                        observer1.observe(elem, {childList: true});                                                   
-                                                    }
-                                                }
-                                            }                                            
-                                        }
-                                    }
-                                };
-                                const observer1 = new MutationObserver(callback1);
-                                observer1.observe(document.getElementById('out'), {childList: true});
-                                observer1.observe(document.getElementById('out2'), {childList: true});
-                                
-                                //change text-part
-                                document.getElementById('out').innerHTML = "";
-                                
-                                const callback2 = (mutationList) => {
-                                    for (const mutation of mutationList) {
-                                        if (mutation.type === "childList") {
-                                            let list = mutation.addedNodes;
-                                            
-                                            //hide first button
-                                            list[0].style.display = 'none';
-                                            
-                                            //change second button
-                                            //there are 2 button-element but observer registered a text-element between them
-                                            list[2].style.background = '#79AB32';
-                                            let version = list[2].textContent;
-                                            list[2].textContent = 'Weiter';
-                                            Android.getPDFVersion(version);
-                                            
-                                            list[2].addEventListener('click', () => {
-                                               Android.onBtnClick(true);
-                                            });
-                                        }
-                                    }
-                                };
-                                const observer2 = new MutationObserver(callback2);
-                                observer2.observe(document.getElementById('kalenderlink_unten'), {childList: true});
-                               
-                            """.trimIndent(), null
-                                        )
+                                        evaluateJavascript(getJavaScript(), null)
                                     }
 
                                     override fun onLoadResource(view: WebView?, url: String?) {
